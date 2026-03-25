@@ -2,6 +2,8 @@ package edu.kis.powp.jobs2d;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -9,34 +11,57 @@ import edu.kis.legacy.drawer.panel.DefaultDrawerFrame;
 import edu.kis.legacy.drawer.panel.DrawPanelController;
 import edu.kis.legacy.drawer.shape.LineFactory;
 import edu.kis.powp.appbase.Application;
+import edu.kis.powp.jobs2d.command.DriverCommand;
+import edu.kis.powp.jobs2d.command.factory.CircleCommandFactory;
+import edu.kis.powp.jobs2d.command.factory.JoeCommandFactory;
+import edu.kis.powp.jobs2d.command.factory.RectangleCommandFactory;
+import edu.kis.powp.jobs2d.command.factory.TriangleCommandFactory;
 import edu.kis.powp.jobs2d.drivers.adapter.LineDrawerAdapter;
 import edu.kis.powp.jobs2d.events.SelectChangeVisibleOptionListener;
 import edu.kis.powp.jobs2d.events.SelectTestFigureOptionListener;
 import edu.kis.powp.jobs2d.features.DrawerFeature;
 import edu.kis.powp.jobs2d.features.DriverFeature;
-import edu.kis.powp.jobs2d.magicpresets.FiguresJoe;
 
 public class TestJobs2dPatterns {
 	private final static Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
+	private static class CommandTest {
+		private final String name;
+		private final DriverCommand command;
+
+		public CommandTest(String name, DriverCommand command) {
+			this.name = name;
+			this.command = command;
+		}
+	}
+
 	/**
 	 * Setup test concerning preset figures in context.
-	 * 
+	 *
 	 * @param application Application context.
 	 */
 	private static void setupPresetTests(Application application) {
 		SelectTestFigureOptionListener selectTestFigureOptionListener = new SelectTestFigureOptionListener(
 				DriverFeature.getDriverManager(),
-				FiguresJoe::figureScript1
+				null
 		);
 
-		application.addTest("Figure Joe 1", selectTestFigureOptionListener);
-		application.addTest("Figure Joe 2", selectTestFigureOptionListener.withScript(FiguresJoe::figureScript2));
+		List<CommandTest> tests = Arrays.asList(
+				new CommandTest("Figure Joe 1", JoeCommandFactory.figuresJoe1()),
+				new CommandTest("Figure Joe 2", JoeCommandFactory.figuresJoe2()),
+				new CommandTest("Double Joe", JoeCommandFactory.doubleJoe()),
+				new CommandTest("Triangle", TriangleCommandFactory.drawTriangle(150, 200)),
+				new CommandTest("Rectangle", RectangleCommandFactory.drawRectangle(100, 50)),
+				new CommandTest("Circle", CircleCommandFactory.drawCircle(60, 100))
+		);
+		for (CommandTest test : tests) {
+			application.addTest(test.name, selectTestFigureOptionListener.withScript(test.command::execute));
+		}
 	}
 
 	/**
 	 * Setup driver manager, and set default driver for application.
-	 * 
+	 *
 	 * @param application Application context.
 	 */
 	private static void setupDrivers(Application application) {
@@ -54,7 +79,7 @@ public class TestJobs2dPatterns {
 
 	/**
 	 * Auxiliary routines to enable using Buggy Simulator.
-	 * 
+	 *
 	 * @param application Application context.
 	 */
 	private static void setupDefaultDrawerVisibilityManagement(Application application) {
@@ -66,7 +91,7 @@ public class TestJobs2dPatterns {
 
 	/**
 	 * Setup menu for adjusting logging settings.
-	 * 
+	 *
 	 * @param application Application context.
 	 */
 	private static void setupLogger(Application application) {
